@@ -1,0 +1,286 @@
+import itertools
+
+import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+import random
+
+from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
+from utils import Get_Distance_Or_Flow
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import connected_components
+from scipy.sparse import csr_array
+from itertools import groupby
+from collections import Counter
+from networkx.algorithms import approximation
+import sys
+
+from batch_topology import create_graph
+from variant_topology import config, topology, workstation
+
+random.seed(1314141)
+
+graph = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
+         [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
+         [1, 5, 8, 6, 3, 2, 4, 10, 15, 17, 20]]
+
+graph2 = [[1, 8, 9, 10, 2, 11, 13, 15, 7, 20],
+          [1, 4, 17, 3, 8, 9, 13, 15, 19, 20],
+          [1, 6, 8, 6, 3, 12, 4, 10, 15, 17, 20],
+          [1, 14, 8, 6, 13, 2, 4, 10, 15, 17, 20]]
+
+batch_seq = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
+            [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
+            [1, 5, 8, 6, 3, 2, 4, 10, 15, 17, 20],
+            [1, 8, 9, 10, 2, 11, 13, 15, 7, 20],
+            [1, 4, 17, 3, 8, 9, 13, 15, 19, 20],
+            [1, 6, 8, 6, 3, 12, 4, 10, 15, 17, 20],
+            [1, 14, 8, 6, 13, 2, 4, 10, 15, 17, 20]]
+
+batch_list = [batch_seq]
+full_ws = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+for graph in batch_list:
+    num = 0
+    top = create_graph(graph, num + 1)
+    print(top)
+
+
+
+
+sys.exit()
+
+
+def unique_values_in_list_of_lists(lst):
+    result = set(x for l in lst for x in l)
+    return list(result)
+
+
+P_variant = [[0, 1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
+             [0, 1, 2, 3, 5, 6, 8, 9, 13, 15, 19, 20],
+             [0, 1, 5, 8, 6, 3, 2, 4, 10, 15, 17, 20]]
+
+# print(unique_values_in_list_of_lists(P_variant))
+
+n = len(unique_values_in_list_of_lists(P_variant))  # max length of the topology
+
+G = nx.DiGraph()
+
+# def cost_flow(graph):
+#    for l in lst:
+#       for x in l:
+
+#   return 0
+
+
+node_list = unique_values_in_list_of_lists(graph)
+edge_list = []
+conn_list = []
+
+print("list of nodes:", node_list)
+print("number of workstation nodes:", len(node_list))
+
+### Create list of edges in the topology
+for i in range(len(graph)):
+    for j in range(len(graph[i]) - 1):
+        # print(graph[i][j], graph[i][j+1])
+        edge = [graph[i][j], graph[i][j + 1]]
+        edge_list.append(edge)
+
+print("edge list:", edge_list)
+# for i in range(len(edge_list)):
+#     for j in range(len(edge_list[i])):
+#         print("THe edge list starts here:", edge_list[i][j])
+
+## convert to adjacency list
+adj = {k: [v[1] for v in g] for k, g in groupby(sorted(edge_list), lambda e: e[0])}
+# adj: {1: [2, 3], 2: [3]}
+
+# an_iterator = itertools.groupby(sorted(edge_list), lambda x : x[0])
+# for key, group in an_iterator:
+#     key_and_group = {key : list(group)}
+#     print(key_and_group)
+
+print("adjacency list dictionary:", adj)
+BDS_graph = [[] for i in range(max(node_list))]
+BDS_list = []
+
+
+#### Function to convert nestedlist into Flat list########
+def flattenNestedList(nestedList):
+    ''' Converts a nested list to a flat list '''
+    flatList = []
+    # Iterate over all the elements in given list
+    for elem in nestedList:
+        # Check if type of element is list
+        if isinstance(elem, list):
+            # Extend the flat list by adding contents of this element (list)
+            flatList.extend(flattenNestedList(elem))
+        else:
+            # Append the element to the list
+            flatList.append(elem)
+    return flatList
+
+
+#### remove repeating values in the list for node keys##############
+for key, value in adj.items():
+    edg_lst = []
+    flatList = []
+    newlist = list(dict.fromkeys(value))
+    conn_list.append(newlist)
+    for i in range(len(newlist)):
+        edg_lst.append(newlist[i])
+    L = [key, edg_lst]
+    flatList = flattenNestedList(L)
+    # print(flatList)
+    BDS_list.append(flatList)
+
+print("BDS list:", BDS_list)
+
+for i in range(1, len(BDS_graph)):
+    for key, value in adj.items():
+        if i == key:
+            BDS_graph[i] = list(dict.fromkeys(value))
+
+print("BDS graph for level:", BDS_graph)
+print("Values from adjacency dict:", conn_list)
+#### convert edge list to adjacency matrix#######3
+# G = nx.Graph(edge_list)
+# A = nx.to_scipy_sparse_matrix(G)
+# print(A.todense())
+adjacency_list = []
+G = nx.MultiGraph()  # Multigraph - Undirected with self loops####
+G.add_nodes_from(node_list)
+G.add_edges_from(edge_list)
+width_dict = Counter(G.edges())
+edge_width = [[u, v, {'frequency': value}]
+              for ((u, v), value) in width_dict.items()]
+
+print("edge congestion:", edge_width)
+# print("cluster triangles", nx.triangles(G))
+print("average clustering:", approximation.average_clustering(G))
+
+H = nx.Graph()
+H.add_nodes_from(node_list)
+H.add_edges_from(edge_list)
+
+print(approximation.treewidth_min_degree(H))
+print(approximation.treewidth_min_fill_in(H))
+
+# print("The graph is a tree:'",nx.is_forest(G))
+
+
+# printLevels(BDS_graph, 20, 0)
+
+
+### PLOT the graph###3
+M = nx.Graph()
+M.add_edges_from(edge_width)
+initialpos = {1: [0, 0], 20: [2, 2]}
+pos = nx.spring_layout(G, weight='myweight', pos=initialpos, k=0.5, dim=2, scale=1, seed=10, iterations=20)
+nx.draw_networkx(G, pos)
+
+for key, value in pos.items():
+    print(value)
+
+min_x, min_y = 0, 0
+for key, value in pos.items():
+    if value[0] < min_x:
+        min_x = value[0]
+    if value[1] < min_y:
+        min_y = value[1]
+
+print(f"min x {min_x} min y {min_y}")
+
+scale = 50
+new_pos = []
+for key, value in pos.items():
+    new_pos.append((key, (scale * (value[0] + abs(min_x)), scale * (value[1] + abs(min_y)))))
+
+# pos = dict(new_pos)
+# print(dict(new_pos))
+
+pos = dict(new_pos)
+
+pos2 = nx.rescale_layout_dict(pos, 2)
+print("old pos:", pos)
+print("new pos:", pos2)
+val = []
+for key, value in pos.items():
+    val.append(list(dict.fromkeys(value)))
+
+# print(val)
+
+##Interpolation to grid is required#######3
+
+
+plt.xlabel('Columns')
+plt.ylabel('Rows')
+plt.title('Swarm topology')
+plt.grid(True)
+plt.savefig('plot of topology')
+# not_in_list = 1 not in node_list
+
+
+### Initialize product specific topologies#################
+
+pos_list = [[0, 0] for i in range(max(node_list) + 1)]
+config_list = []
+
+product_topologies = []
+all_workstations = []
+batch_topologies = []
+new_list = []
+
+for i in range(len(pos_list)):
+    for key, value in pos.items():
+        if i == key:
+            pos_list[i] = list(dict.fromkeys(value))
+
+print("position list", pos_list)
+print(len(pos_list))
+
+for i in range(len(graph)):
+    ws = []
+    for j in range(len(graph[i])):
+        ws.append(workstation(num=graph[i][j], active=True))
+    all_workstations.append(ws)
+
+# Configuration data for topologies is created here
+# for i in range(len(graph)):
+#     cs = []
+#     ds = []
+#     for j in range(len(graph[i])):
+#         cs.append(config(random.randint(0, 9), random.randint(0, 9)))
+#
+#         ds.append(config(0, 0))
+#     config_list.append(cs)
+#     new_list.append(ds)
+#
+# print("config list:", config_list)
+
+sorted_configs = []
+for graph_taken in graph:
+    # [1 5 4 2 3]
+    this_graph_config = []
+    for node in graph_taken:
+        print(f"Node {node}")
+        print(f"Value= {pos_list[node]}")
+        this_graph_config.append(config(pos_list[node][0], pos_list[node][0]))
+    sorted_configs.append(this_graph_config)
+
+print(all_workstations)
+print(len(all_workstations))
+
+print("Sorted list:", sorted_configs)
+
+for num in range(len(all_workstations)):
+    product_topologies.append(topology(all_workstations[num], sorted_configs[num], num + 1))
+
+for top in product_topologies:
+    top.display()
+    print("distance travelled:", top.calculate_distance())
+    print("Fitness value:", top.fitness_calc())
+
+sys.exit()
