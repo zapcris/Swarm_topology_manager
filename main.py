@@ -151,6 +151,7 @@ def GA_recursion(fitness):
         result = fitness
     return result
 
+##### END oF GA ######
 print("\n\nRecursion Results")
 print(GA_recursion(offspring_fitness[0]))
 
