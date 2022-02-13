@@ -1,3 +1,4 @@
+import math
 from collections import Counter
 import random
 import networkx as nx
@@ -12,11 +13,12 @@ def unique_values_in_list_of_lists(lst):
     return list(result)
 
 
-def create_graph(graph, num):
-    k = 0
+def create_batch_topology(graph, num, k_val, iter):
+    #k = 0
+    print("The batch topology number:", num)
     node_list = unique_values_in_list_of_lists(graph)
-    print(node_list)
-    print("no of node:", len(node_list))
+    # print(node_list)
+    # print("no of node:", len(node_list))
     edge_list = []
     tw = 0
     for i in range(len(graph)):
@@ -25,7 +27,7 @@ def create_graph(graph, num):
             edge = [graph[i][j], graph[i][j + 1]]
             edge_list.append(edge)
 
-    print(edge_list)
+    #print(edge_list)
 
 
     G = nx.MultiGraph()
@@ -34,7 +36,7 @@ def create_graph(graph, num):
     width_dict = Counter(G.edges())
     edge_width = [[u, v, {'frequency': value}]
                   for ((u, v), value) in width_dict.items()]
-    print(edge_width)
+    #print(edge_width)
 
     H = nx.Graph()
     H.add_nodes_from(node_list)
@@ -47,13 +49,13 @@ def create_graph(graph, num):
     #cs = hierarchy.flow_hierarchy(L)
     eff = efficiency_measures.global_efficiency(G)
 
-    print("Flow hierarchy value:", eff)
+    #print("Flow hierarchy value:", eff)
 
     #print(approximation.treewidth_min_degree(H))
     #print(approximation.treewidth_min_fill_in(H))
 
     initialpos = {1: [0, 0], 20: [2, 2]}
-    pos = nx.spring_layout(G, weight='myweight', pos=initialpos, k=0.5, dim=2, scale=1, seed=10, iterations=20)
+    pos = nx.spring_layout(G, weight='myweight', pos=initialpos, k=k_val, dim=2, scale=1, seed=15, iterations=iter)
     nx.draw_networkx(G, pos)
     pos2 = nx.rescale_layout_dict(pos, 2)
 
@@ -76,23 +78,21 @@ def create_graph(graph, num):
 
     # pos = dict(new_pos)
     # print(dict(new_pos))
-    print(pos)
+    #print(pos)
     pos = dict(new_pos)
-    print(pos)
+    #print(pos)
     #print("old pos:", pos)
     #print("new pos:", pos2)
     val = []
     for key, value in pos.items():
         val.append(list(dict.fromkeys(value)))
 
-
-
-
+    separated_num = math.modf(k_val)
     plt.xlabel('Columns')
     plt.ylabel('Rows')
     plt.title('Swarm topology')
     plt.grid(True)
-    plt.savefig(f'{num}_batch_topology')
+    plt.savefig(f'kval{round(separated_num[1])}_{round(separated_num[0] * 100)}_iter{iter}_batch_topology')
 
     pos_list = [[0, 0] for i in range(max(node_list) + 1)]
     config_list = []
@@ -107,7 +107,7 @@ def create_graph(graph, num):
             if i == key:
                 pos_list[i] = list(dict.fromkeys(value))
 
-    print(pos_list)
+    #print(pos_list)
 
     for i in range(len(graph)):
         ws = []
@@ -121,7 +121,7 @@ def create_graph(graph, num):
         this_graph_config = []
         for node in graph_taken:
             #print(f"Node {node}")
-            #print(f"Value= {pos_list[node]}")
+            #print(f"Value= {round(pos_list[node][0]),round(pos_list[node][1])}")
             this_graph_config.append(config(round(pos_list[node][0]), round(pos_list[node][1])))
         sorted_configs.append(this_graph_config)
 
@@ -134,4 +134,4 @@ def create_graph(graph, num):
         total_cost.append(top.calculate_distance())
         fitness_value.append(top.fitness_calc())
 
-    return k, tw, total_cost, fitness_value
+    return sum(fitness_value)

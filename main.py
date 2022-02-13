@@ -1,4 +1,6 @@
 import itertools
+import math
+from dataclasses import dataclass
 
 import numpy as np
 import networkx as nx
@@ -16,7 +18,7 @@ from collections import Counter
 from networkx.algorithms import approximation
 import sys
 
-from batch_topology import create_graph
+from batch_topology import create_batch_topology
 from variant_topology import config, topology, workstation
 
 random.seed(1314141)
@@ -31,24 +33,128 @@ graph2 = [[1, 8, 9, 10, 2, 11, 13, 15, 7, 20],
           [1, 14, 8, 6, 13, 2, 4, 10, 15, 17, 20]]
 
 batch_seq = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
-            [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
-            [1, 5, 8, 6, 3, 2, 4, 10, 15, 17, 20],
-            [1, 8, 9, 10, 2, 11, 13, 15, 7, 20],
-            [1, 4, 17, 3, 8, 9, 13, 15, 19, 20],
-            [1, 6, 8, 6, 3, 12, 4, 10, 15, 17, 20],
-            [1, 14, 8, 6, 13, 2, 4, 10, 15, 17, 20]]
+             [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
+             [1, 5, 8, 6, 3, 2, 4, 10, 15, 17, 20],
+             [1, 8, 9, 10, 2, 11, 13, 15, 7, 20],
+             [1, 4, 17, 3, 8, 9, 13, 15, 19, 20],
+             [1, 6, 8, 6, 3, 12, 4, 10, 15, 17, 20],
+             [1, 14, 8, 6, 13, 2, 4, 10, 15, 17, 20]]
 
 batch_list = [batch_seq]
 full_ws = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-for graph in batch_list:
-    num = 0
-    top = create_graph(graph, num + 1)
-    print(top)
+
+# for gr in batch_list:
+#     num = 0
+#     top = create_graph(batch_seq, num + 1, 2.2)
+#     print(top)
 
 
+@dataclass
+class chromosome:
+    k_val: float
+    iter_nr : int
+    sequence: []
 
 
+chrm = chromosome
+init_population = []
+start_k = 1.2
+stop_k = 2.0
+step_k = 0.2
+
+## Calculate 2 sets of population with different iteration value 25 and 35#####
+
+for i in range(int(start_k * 10), int(stop_k * 10), int(step_k * 10)):
+    chrm = chromosome(i / 10, 25, batch_seq)
+    init_population.append(chrm)
+    # print(i / 10)
+
+for i in range(int(start_k * 10), int(stop_k * 10), int(step_k * 10)):
+    chrm = chromosome(i / 10, 35, batch_seq)
+    init_population.append(chrm)
+
+# for p in population:
+#     print(p)
+
+
+fitness_list = []
+for i in range(len(init_population)):
+
+    btop = create_batch_topology(init_population[i].sequence, i + 1, init_population[i].k_val, init_population[i].iter_nr)
+    fitness_list.append(btop)
+    print(btop)
+
+print(fitness_list)
+
+
+########choosing the parents ####################
+middle_index = round(len(init_population)/2)
+
+sorted_fitness1 = fitness_list [:middle_index]
+sorted_fitness2 = fitness_list [middle_index:]
+
+
+print(sorted_fitness1.index(sorted(sorted_fitness1)[0]))
+print(sorted_fitness2.index(sorted(sorted_fitness2)[0]))
+
+parent_1 = init_population[sorted_fitness1.index(sorted(sorted_fitness1)[0])]
+parent_2 = init_population[sorted_fitness2.index(sorted(sorted_fitness2)[0]) + middle_index]
+
+print("Parent 1:", parent_1)
+print("Parent 2:,", parent_2)
+
+####3 Crossover part of Genetic algorithm##################
+off_population = []
+offspring_fitness = []
+
+
+offspring_1 = chromosome(parent_1.k_val, parent_2.iter_nr, parent_1.sequence)
+off_population.append(offspring_1)
+
+offspring_2 = chromosome(parent_2.k_val, parent_1.iter_nr, parent_2.sequence)
+off_population.append(offspring_2)
+
+for i in range(len(off_population)):
+
+    off_top = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val, off_population[i].iter_nr)
+    offspring_fitness.append(off_top)
+    print("OFF spring topologies:", i+1, off_top)
+
+
+### Mutation function to be decided later#####3#
+mut_population = []
+mut_fitness = []
+
+###Recursive operation until desired fitness achieved#############
+
+def GA_recursion(fitness):
+    chrm = chromosome
+    init_population = []
+    start_k = 1.2
+    stop_k = 2.0
+    step_k = 0.2
+    if(fitness > 500):
+        init_population.clear()
+        print("Cleared length of population:", len(init_population))
+        # for i in range(int(start_k * 10), int(stop_k * 10), int(step_k * 10)):
+        #     chrm = chromosome(i / 10, 25, batch_seq)
+        #     init_population.append(chrm)
+        #     # print(i / 10)
+        #
+        # for i in range(int(start_k * 10), int(stop_k * 10), int(step_k * 10)):
+        #     chrm = chromosome(i / 10, 35, batch_seq)
+        #     init_population.append(chrm)
+        result = 500
+        #print(result)
+    else:
+        result = fitness
+    return result
+
+print("\n\nRecursion Results")
+print(GA_recursion(offspring_fitness[0]))
+
+### END OF GENETIC ALGORITHM########
 sys.exit()
 
 

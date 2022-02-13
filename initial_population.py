@@ -1,7 +1,11 @@
 import random
-
-def chromosome(topology):
-
+from dataclasses import dataclass
 
 
-    return 0
+@dataclass
+class chromosome:
+    sequence: []
+    k_val: float
+
+
+
