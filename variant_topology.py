@@ -21,10 +21,10 @@ class topology():
         self.configs = config_list
         self.num = top_num
 
-    def display(self):
-        # for ws, cfg in zip(self.ws_list, self.configs):
-        #     print(f"Workstation number: {ws.num} Coordinates x={cfg.x:.2f} y={cfg.y:.2f} active={ws.active}")
-        print(f"The topology for product variant in batch  number is {self.num}")
+    # def display(self):
+    #     # for ws, cfg in zip(self.ws_list, self.configs):
+    #     #     print(f"Workstation number: {ws.num} Coordinates x={cfg.x:.2f} y={cfg.y:.2f} active={ws.active}")
+    #     print(f"The topology for product variant in batch  number is {self.num}")
 
     def calculate_distance(self):
         total_ws = len(self.ws_list)  # 5

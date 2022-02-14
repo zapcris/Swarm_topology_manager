@@ -70,19 +70,30 @@ def create_batch_topology(graph, num, k_val, iter):
             min_y = value[1]
 
     #print(f"min x {min_x} min y {min_y}")
-
+    #print("position old data structure:", pos)
     scale = 20
     new_pos = []
+    r_pos = []
     for key, value in pos.items():
         new_pos.append((key, (scale * (value[0] + abs(min_x)), scale * (value[1] + abs(min_y)))))
 
     # pos = dict(new_pos)
     # print(dict(new_pos))
     #print(pos)
+
+
     pos = dict(new_pos)
-    #print(pos)
+    print("position data structure:", pos)
     #print("old pos:", pos)
     #print("new pos:", pos2)
+
+    for key, value in pos.items():
+        r_pos.append((key,(round(value[0]), round(value[1]))))
+
+    return_pos = dict(r_pos)
+
+
+
     val = []
     for key, value in pos.items():
         val.append(list(dict.fromkeys(value)))
@@ -92,7 +103,7 @@ def create_batch_topology(graph, num, k_val, iter):
     plt.ylabel('Rows')
     plt.title('Swarm topology')
     plt.grid(True)
-    plt.savefig(f'kval{round(separated_num[1])}_{round(separated_num[0] * 100)}_iter{iter}_batch_topology')
+    #plt.savefig(f'kval{round(separated_num[1])}_{round(separated_num[0] * 100)}_iter{iter}_batch_topology')
 
     pos_list = [[0, 0] for i in range(max(node_list) + 1)]
     config_list = []
@@ -101,6 +112,8 @@ def create_batch_topology(graph, num, k_val, iter):
     all_workstations = []
     batch_topologies = []
     new_list = []
+    total_cost = []
+    fitness_value = []
 
     for i in range(len(pos_list)):
         for key, value in pos.items():
@@ -127,11 +140,10 @@ def create_batch_topology(graph, num, k_val, iter):
 
     for num in range(len(all_workstations)):
         product_topologies.append(topology(all_workstations[num], sorted_configs[num], num + 1))
-        total_cost = []
-        fitness_value=[]
+
     for top in product_topologies:
-        top.display()
+        #top.display()
         total_cost.append(top.calculate_distance())
         fitness_value.append(top.fitness_calc())
 
-    return sum(fitness_value)
+    return sum(fitness_value), return_pos
