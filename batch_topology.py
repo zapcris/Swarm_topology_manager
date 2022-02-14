@@ -83,7 +83,7 @@ def create_batch_topology(graph, num, k_val, iter):
 
 
     pos = dict(new_pos)
-    print("position data structure:", pos)
+    #print("position data structure:", pos)
     #print("old pos:", pos)
     #print("new pos:", pos2)
 
@@ -133,7 +133,7 @@ def create_batch_topology(graph, num, k_val, iter):
         # [1 5 4 2 3]
         this_graph_config = []
         for node in graph_taken:
-            #print(f"Node {node}")
+            print(f"Node {node}")
             #print(f"Value= {round(pos_list[node][0]),round(pos_list[node][1])}")
             this_graph_config.append(config(round(pos_list[node][0]), round(pos_list[node][1])))
         sorted_configs.append(this_graph_config)

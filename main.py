@@ -6,10 +6,10 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import random
-from tkinter import Tk, Label, Button
+
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
-#from .utils import Get_Distance_Or_Flow
+# from .utils import Get_Distance_Or_Flow
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import csr_array
@@ -17,7 +17,12 @@ from itertools import groupby
 from collections import Counter
 from networkx.algorithms import approximation
 import sys
+import xlrd
+from tkinter import *
+from tkinter.filedialog import askopenfile
+from openpyxl import load_workbook
 
+from UI import open_file
 from batch_topology import create_batch_topology
 from variant_topology import config, topology, workstation
 
@@ -53,8 +58,8 @@ full_ws = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
 @dataclass
 class chromosome:
     k_val: float
-    iter_nr : int
-    sequence: []
+    iter_nr: int
+    sequence: list
 
 
 chrm = chromosome
@@ -62,7 +67,6 @@ init_population = []
 start_k = 1.2
 stop_k = 2.0
 step_k = 0.2
-
 
 ## Calculate 2 sets of population with different iteration value 25 and 35#####
 
@@ -82,11 +86,11 @@ for i in range(int(start_k * 10), int(stop_k * 10), int(step_k * 10)):
 fitness_list = []
 topology_htable = dict()
 for i in range(len(init_population)):
-
-    btop = create_batch_topology(init_population[i].sequence, i + 1, init_population[i].k_val, init_population[i].iter_nr)
+    btop = create_batch_topology(init_population[i].sequence, i + 1, init_population[i].k_val,
+                                 init_population[i].iter_nr)
     fitness_list.append(btop[0])
-    topology_htable.update({btop[0]:btop[1]})
-    #print(btop)
+    topology_htable.update({btop[0]: btop[1]})
+    # print(btop)
 
 print("Fitness list:", fitness_list)
 
@@ -94,14 +98,11 @@ print("Fitness list:", fitness_list)
 #     print(key, value)
 
 
-
-
 ########choosing the parents ####################
-middle_index = round(len(init_population)/2)
+middle_index = round(len(init_population) / 2)
 
-sorted_fitness1 = fitness_list [:middle_index]
-sorted_fitness2 = fitness_list [middle_index:]
-
+sorted_fitness1 = fitness_list[:middle_index]
+sorted_fitness2 = fitness_list[middle_index:]
 
 print(sorted_fitness1.index(sorted(sorted_fitness1)[0]))
 print(sorted_fitness2.index(sorted(sorted_fitness2)[0]))
@@ -116,8 +117,6 @@ print("Parent 2:,", parent_2)
 off_population = []
 offspring_fitness = []
 
-
-
 offspring_1 = chromosome(parent_1.k_val, parent_2.iter_nr, parent_1.sequence)
 off_population.append(offspring_1)
 
@@ -125,17 +124,16 @@ offspring_2 = chromosome(parent_2.k_val, parent_1.iter_nr, parent_2.sequence)
 off_population.append(offspring_2)
 
 for i in range(len(off_population)):
-
-    off_top = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val, off_population[i].iter_nr)
+    off_top = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
+                                    off_population[i].iter_nr)
     offspring_fitness.append(off_top[0])
     topology_htable.update({off_top[0]: off_top[1]})
-    print("OFF spring topologies:", i+1, off_top)
+    print("OFF spring topologies:", i + 1, off_top)
 
 print(min(offspring_fitness))
 
 for key, value in topology_htable.items():
     print(key, value)
-
 
 ### Mutation function to be decided later#####3#
 mut_population = []
@@ -143,6 +141,8 @@ mut_fitness = []
 
 ###Recursive operation until desired fitness achieved#############
 min_fitness = []
+
+
 def GA_recursion(itr1, itr2, rec_nr):
     new_population = []
     fit_list = []
@@ -150,13 +150,13 @@ def GA_recursion(itr1, itr2, rec_nr):
     offspr_fitness = []
     start_k = 1.3
     stop_k = 2.0
-    step_k = (stop_k - start_k)/ 0.25
+    step_k = (stop_k - start_k) / 0.25
     print(f'The recursion number is {rec_nr} with iteration pari {itr1} and {itr2}')
-    #print("Cleared length of population:", len(new_population))
+    # print("Cleared length of population:", len(new_population))
     for i in range(int(start_k * 10), int(stop_k * 10), int(step_k)):
         chrm1 = chromosome(i / 10, itr1, batch_seq)
         new_population.append(chrm1)
-        #print(i / 10)
+        # print(i / 10)
 
     for i in range(int(start_k * 10), int(stop_k * 10), int(step_k)):
         chrm2 = chromosome(i / 10, itr2, batch_seq)
@@ -169,7 +169,6 @@ def GA_recursion(itr1, itr2, rec_nr):
         topology_htable.update({top[0]: top[1]})
 
     print("The current population fitness list:", fit_list)
-
 
     m_index = round(len(new_population) / 2)
 
@@ -187,26 +186,26 @@ def GA_recursion(itr1, itr2, rec_nr):
     offspr_2 = chromosome(p_2.k_val, p_1.iter_nr, p_2.sequence)
     off_populn.append(offspr_2)
 
-    print("offspring 1 chromosome:",offspr_1)
-    print("offspring 2 chromosome:",offspr_2)
+    print("offspring 1 chromosome:", offspr_1)
+    print("offspring 2 chromosome:", offspr_2)
 
     for i in range(len(off_populn)):
         otop = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
-                                        off_population[i].iter_nr)
+                                     off_population[i].iter_nr)
         offspr_fitness.append(otop[0])
         topology_htable.update({otop[0]: otop[1]})
-        #print("OFF spring topologies:", i + 1, otop)
+        # print("OFF spring topologies:", i + 1, otop)
 
     print("fitness list of offspring in this iteration:", offspr_fitness)
     print("minimum fitnesss value in this iteration:", min(offspr_fitness))
 
     if min(fit_list) < min(offspr_fitness):
-        gen_min_fitness = min (fit_list)
+        gen_min_fitness = min(fit_list)
     else:
         gen_min_fitness = min(offspr_fitness)
     print("minimumfitness value in this generation:", gen_min_fitness)
 
-    #rint(int(step_k))
+    # rint(int(step_k))
     # print(result)
 
     if min(offspr_fitness) > 500 and itr1 != 40 and itr2 != 45:
@@ -220,7 +219,7 @@ def GA_recursion(itr1, itr2, rec_nr):
         # del offspr_1
         # del offspr_2
 
-        GA_recursion(itr1+5, itr2+5, rec_nr +1 )
+        GA_recursion(itr1 + 5, itr2 + 5, rec_nr + 1)
         result = min(min_fitness)
 
     elif min(offspr_fitness) <= 500:
@@ -230,6 +229,7 @@ def GA_recursion(itr1, itr2, rec_nr):
         result = 0
 
     return result
+
 
 ##### END of GA ######
 if min(offspring_fitness) > 500:
@@ -246,29 +246,14 @@ elif min(offspring_fitness) <= 500:
 
 
 ### Visualising grid######3
-
-# class MyFirstGUI:
-#     def __init__(self, master):
-#         self.master = master
-#         master.title("A simple GUI")
-#
-#         self.label = Label(master, text="This is our first GUI!")
-#         self.label.pack()
-#
-#         self.greet_button = Button(master, text="Greet", command=self.greet)
-#         self.greet_button.pack()
-#
-#         self.close_button = Button(master, text="Close", command=master.quit)
-#         self.close_button.pack()
-#
-#     def greet(self):
-#         print("Greetings!")
-#
-# root = Tk()
-# my_gui = MyFirstGUI(root)
+root = Tk()
+root.geometry('200x100')
+btn = Button(root, text ='Open', command = open_file)
+btn.pack(side='top')
 
 
 
+mainloop()
 
 sys.exit()
 
