@@ -22,11 +22,66 @@ from tkinter import *
 from tkinter.filedialog import askopenfile
 from openpyxl import load_workbook
 
+from Genetic_Algorithm import run_GA
 from UI import open_file
 from batch_topology import create_batch_topology
 from variant_topology import config, topology, workstation
+import networkx as nx
+from tkinter import *
+from tkinter.filedialog import askopenfile
+from openpyxl import load_workbook
+from ttkbootstrap.constants import *
+import pandas as pd
 
 random.seed(1314141)
+
+
+def close():
+    # win.destroy()
+    root.quit()
+
+######### Tkinter UI ###############
+root = Tk()
+root.geometry('800x600')
+
+btn = Button(root, text='Open the batch sequence excel file', command=run_GA)
+btn.pack(side='top')
+
+btn2 = Button(root, text='Close the program', command=close)
+btn2.pack(side='bottom')
+
+# dates = pd.date_range('20210101', periods=8)
+# dframe = pd.DataFrame(np.random.randn(8,4),index=dates,columns=list('ABCD'))
+ini_string = 'SWARM TOPOLOGY MANAGER'
+dframe = pd.DataFrame
+
+txt = Text(root)
+txt.pack()
+
+
+class PrintToTXT(object):
+    def write(self, s):
+        txt.insert(END, s)
+
+
+sys.stdout = PrintToTXT()
+
+print("The Batch Sequence from the sheet")
+
+print(dframe)
+
+root.mainloop()
+
+####### OLD RUNNING IMPLEMENTATION########################
+sys.exit()
+
+
+@dataclass
+class chromosome:
+    k_val: float
+    iter_nr: int
+    sequence: list
+
 
 graph = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
          [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
@@ -48,18 +103,10 @@ batch_seq = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
 batch_list = [batch_seq]
 full_ws = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-
 # for gr in batch_list:
 #     num = 0
 #     top = create_graph(batch_seq, num + 1, 2.2)
 #     print(top)
-
-
-@dataclass
-class chromosome:
-    k_val: float
-    iter_nr: int
-    sequence: list
 
 
 chrm = chromosome
@@ -246,14 +293,7 @@ elif min(offspring_fitness) <= 500:
 
 
 ### Visualising grid######3
-root = Tk()
-root.geometry('200x100')
-btn = Button(root, text ='Open', command = open_file)
-btn.pack(side='top')
 
-
-
-mainloop()
 
 sys.exit()
 
