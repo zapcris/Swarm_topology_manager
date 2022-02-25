@@ -268,12 +268,12 @@ def run_GA():
         print("The topology of the fittest value:", topology_htable[final_fitness])
 
         nx.draw(OptmialGraph, topology_htable[final_fitness], with_labels=True)
-        plt2.savefig('optimal topology')
+        plt2.savefig('optimal topology found from GA recursion')
 
     elif min(offspring_fitness) <= 500:
         print("Fitness value found below 500:", min(offspring_fitness))
         nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)], with_labels=True)
-        plt2.show()
+        plt2.show('optimal topology found without GA recursion')
 
 
 
