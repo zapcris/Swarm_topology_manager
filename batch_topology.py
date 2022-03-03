@@ -3,7 +3,7 @@ from collections import Counter
 import random
 import networkx as nx
 from matplotlib import pyplot as plt
-from networkx.algorithms import approximation, hierarchy, efficiency_measures
+from networkx.algorithms import approximation, hierarchy, efficiency_measures, tree
 
 from variant_topology import workstation, config, topology
 
@@ -34,9 +34,13 @@ def create_batch_topology(graph, num, k_val, iter):
     G.add_nodes_from(node_list)
     G.add_edges_from(edge_list)
     width_dict = Counter(G.edges())
+    ### Calculate the frequency of connections between edges in the graph
     edge_width = [[u, v, {'frequency': value}]
                   for ((u, v), value) in width_dict.items()]
     #print(edge_width)
+
+
+
 
     H = nx.Graph()
     H.add_nodes_from(node_list)
@@ -48,6 +52,7 @@ def create_batch_topology(graph, num, k_val, iter):
 
     #cs = hierarchy.flow_hierarchy(L)
     eff = efficiency_measures.global_efficiency(G)
+    edm = tree.branchings.edmonds.f
 
     #print("Flow hierarchy value:", eff)
 
