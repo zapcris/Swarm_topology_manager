@@ -52,7 +52,7 @@ def create_batch_topology(graph, num, k_val, iter):
 
     #cs = hierarchy.flow_hierarchy(L)
     eff = efficiency_measures.global_efficiency(G)
-    edm = tree.branchings.edmonds.f
+
 
     #print("Flow hierarchy value:", eff)
 

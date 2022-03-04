@@ -35,6 +35,7 @@ import pandas as pd
 
 random.seed(1314141)
 
+
 @dataclass
 class chromosome:
     k_val: float
@@ -65,11 +66,11 @@ def run_GA():
 
     batch_seq = [[] for i in range(column)]
 
-    for i in range(1, column+1):
+    for i in range(1, column + 1):
         for j in range(2, row + 1):
             # print(sh1.cell(i,1).value)
             if sh1.cell(j, i).value != None:
-                batch_seq[i-1].append(sh1.cell(j, i).value)
+                batch_seq[i - 1].append(sh1.cell(j, i).value)
 
     # batch_seq = [[1, 5, 9, 10, 2, 11, 13, 15, 7, 20],
     #              [1, 2, 7, 3, 5, 6, 8, 9, 13, 15, 19, 20],
@@ -145,7 +146,7 @@ def run_GA():
                                         off_population[i].iter_nr)
         offspring_fitness.append(off_top[0])
         topology_htable.update({off_top[0]: off_top[1]})
-        #print("OFF spring topologies:", i + 1, off_top)
+        # print("OFF spring topologies:", i + 1, off_top)
 
     print(min(offspring_fitness))
 
@@ -274,7 +275,5 @@ def run_GA():
         print("Fitness value found below 500:", min(offspring_fitness))
         nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)], with_labels=True)
         plt2.show('optimal topology found without GA recursion')
-
-
 
 
