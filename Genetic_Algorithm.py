@@ -248,7 +248,7 @@ def run_GA():
         return result
 
     ### Draw the optimal topology#####
-    OptmialGraph = nx.Graph()
+    OptmialGraph = nx.MultiGraph()
     n_list = unique_values_in_list_of_lists(batch_seq)
     e_list = []
     for i in range(len(batch_seq)):
@@ -276,4 +276,7 @@ def run_GA():
         nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)], with_labels=True)
         plt2.show('optimal topology found without GA recursion')
 
-
+    width_dict = Counter(OptmialGraph.edges())
+    edge_width = [[u, v, {'frequency': value}]
+                  for ((u, v), value) in width_dict.items()]
+    print("The frequency of edges", edge_width)
