@@ -1,39 +1,14 @@
-import itertools
-import math
-from dataclasses import dataclass
-
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
 import random
-import pymongo
-from sklearn import preprocessing
-from sklearn.preprocessing import MinMaxScaler
 # from .utils import Get_Distance_Or_Flow
-from scipy.sparse import csr_matrix
-from scipy.sparse.csgraph import connected_components
-from scipy.sparse import csr_array
-from itertools import groupby
-from collections import Counter
-from networkx.algorithms import approximation
 import sys
-import xlrd
-from tkinter import *
-from tkinter.filedialog import askopenfile
-from openpyxl import load_workbook
-from pymongo import MongoClient, errors
-from Genetic_Algorithm import run_GA
-from tkinter import StringVar, messagebox
-from UI import open_file
-from batch_topology import create_batch_topology
 # from orderlist_db import database
-from variant_topology import config, topology, workstation
-import networkx as nx
 from tkinter import *
-from tkinter.filedialog import askopenfile
-from openpyxl import load_workbook
-from ttkbootstrap.constants import *
+
 import pandas as pd
+from pymongo import MongoClient
+from ttkbootstrap.constants import *
+
+from Genetic_Algorithm import run_GA
 
 random.seed(1314141)
 
