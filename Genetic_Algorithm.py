@@ -67,6 +67,7 @@ def run_GA():
     batch_seq = [[] for i in range(column)]
 
     for i in range(1, column + 1):
+
         for j in range(2, row + 1):
             # print(sh1.cell(i,1).value)
             if sh1.cell(j, i).value != None:

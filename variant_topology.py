@@ -15,7 +15,7 @@ class config:
     y: float
 
 
-class topology():
+class topology:
     def __init__(self, ws_list, config_list, top_num):
         self.ws_list = ws_list
         self.configs = config_list
