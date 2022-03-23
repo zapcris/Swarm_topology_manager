@@ -1,3 +1,9 @@
+import math
+
+
+def euclidean_dist(x1, y1, x2, y2):
+    dist = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2) * 1.0)
+    return round(dist)
 
 
 class Fitness():
