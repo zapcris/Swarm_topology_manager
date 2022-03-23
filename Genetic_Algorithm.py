@@ -24,6 +24,7 @@ from openpyxl import load_workbook
 
 from UI import open_file
 from batch_topology import create_batch_topology, unique_values_in_list_of_lists
+from production_performance import prod_efficiency
 
 from variant_topology import config, topology, workstation
 import networkx as nx
@@ -109,7 +110,7 @@ def run_GA():
         btop = create_batch_topology(init_population[i].sequence, i + 1, init_population[i].k_val,
                                      init_population[i].iter_nr)
         fitness_list.append(btop[0])
-        topology_htable.update({btop[0]: btop[1]})
+        topology_htable.update({btop[0]: (btop[1], btop[2])})
         # print(btop)
 
     print("Fitness list:", fitness_list)
@@ -146,7 +147,7 @@ def run_GA():
         off_top = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
                                         off_population[i].iter_nr)
         offspring_fitness.append(off_top[0])
-        topology_htable.update({off_top[0]: off_top[1]})
+        topology_htable.update({off_top[0]: (off_top[1],off_top[2])})
         # print("OFF spring topologies:", i + 1, off_top)
 
     print(min(offspring_fitness))
@@ -184,7 +185,7 @@ def run_GA():
             top = create_batch_topology(new_population[i].sequence, i + 1, new_population[i].k_val,
                                         new_population[i].iter_nr)
             fit_list.append(top[0])
-            topology_htable.update({top[0]: top[1]})
+            topology_htable.update({top[0]: (top[1], top[2])})
 
         print("The current population fitness list:", fit_list)
 
@@ -211,7 +212,7 @@ def run_GA():
             otop = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
                                          off_population[i].iter_nr)
             offspr_fitness.append(otop[0])
-            topology_htable.update({otop[0]: otop[1]})
+            topology_htable.update({otop[0]: (otop[1], otop[2])})
             # print("OFF spring topologies:", i + 1, otop)
 
         print("fitness list of offspring in this iteration:", offspr_fitness)
@@ -269,15 +270,19 @@ def run_GA():
         print("The least possible fitness value:", final_fitness)
         print("The topology of the fittest value:", topology_htable[final_fitness])
 
-        nx.draw(OptmialGraph, topology_htable[final_fitness], with_labels=True)
+        nx.draw(OptmialGraph, topology_htable[final_fitness][0], with_labels=True)
         plt2.savefig('optimal topology found from GA recursion')
 
     elif min(offspring_fitness) <= 500:
         print("Fitness value found below 500:", min(offspring_fitness))
-        nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)], with_labels=True)
+        nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)][0], with_labels=True)
         plt2.show('optimal topology found without GA recursion')
 
     width_dict = Counter(OptmialGraph.edges())
     edge_width = [[u, v, {'frequency': value}]
                   for ((u, v), value) in width_dict.items()]
     print("The frequency of edges", edge_width)
+
+    "Production performance of the fittest solution"
+    Qty_order = [10, 30, 50, 20, 60, 20, 40]
+    print(prod_efficiency(batch_seq, topology_htable[final_fitness][0], Qty_order, topology_htable[final_fitness][1]))

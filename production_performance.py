@@ -10,14 +10,13 @@ from itertools import combinations
 def euclidean_dist(x1, y1, x2, y2):
     dist = math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2) * 1.0)
     return round(dist)
+
+
 random.seed(1033)
 
 
-
-
 def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
-
-    #print(Batch_sequence)
+    # print(Batch_sequence)
     edge_list = []
     edge_pos_list = []
     for i in range(len(Batch_sequence)):
@@ -31,8 +30,8 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
         edge_list.append(edges)
         edge_pos_list.append(edges_pos)
 
-    #print(edge_list)
-    #print(edge_pos_list)
+    # print(edge_list)
+    # print(edge_pos_list)
 
     multi_strng_list = []
 
@@ -43,14 +42,14 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     # for i in multi_strng_list:
     #     print(i)
     # # crossing is always zero in heirarchial tree graph
-    num_crossings = [0] * len(Batch_sequence)
+    num_crossings = []
     for multi_strng in multi_strng_list:
         c = 0
         for line1, line2 in combinations([line for line in multi_strng], 2):
             if line1.intersects(line2):
-                #print(line1.intersection(line2))
+                # print(line1.intersection(line2))
                 c += 1
-        #num_crossings.append(c)
+        num_crossings.append(c)
     print("no of crossings", num_crossings)
     vel_transport = 2  # speed of the transport robot
     process_time = 5  ## uniform process time required by workstations
@@ -59,19 +58,18 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     for seq, gLen, qty, cross in zip(Batch_sequence, len_graph, Qty, num_crossings):
         num_workstations = len(seq)
         dist_lastedge = euclidean_dist(pos[seq[-2]][0], pos[seq[-2]][1], pos[seq[-1]][0], pos[seq[-1]][1])
-        ct_1st_prod = (num_workstations * process_time) + (gLen / vel_transport)  ## first product doesnot experience congestion
+        ct_1st_prod = (num_workstations * process_time) + (
+                    gLen / vel_transport)  ## first product doesnot experience congestion
         ct_normal_product = process_time + (dist_lastedge / vel_transport)
         random_loss = cross * (random.randint(0, qty) * ct_normal_product)
-        #print(random_loss)
+        # print(random_loss)
         total_cycle_time = ct_1st_prod + ((qty - 1) * ct_normal_product) + random_loss
         batch_time.append(total_cycle_time)
     Batch_prod_time = sum(batch_time)
 
+    return Batch_prod_time, batch_time
 
-    return Batch_prod_time
-
-
-#print(stochastic_throughput(Batch, G_pos, Qty_order, fitness_len))
+# print(stochastic_throughput(Batch, G_pos, Qty_order, fitness_len))
 
 #
 # "Calculate the throughput of the system"

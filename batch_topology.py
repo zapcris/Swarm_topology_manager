@@ -151,4 +151,4 @@ def create_batch_topology(graph, num, k_val, iter):
         total_cost.append(top.calculate_distance())
         fitness_value.append(top.fitness_calc())
 
-    return sum(fitness_value), return_pos
+    return sum(fitness_value), return_pos, fitness_value
