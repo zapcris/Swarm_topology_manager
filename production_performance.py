@@ -17,19 +17,29 @@ random.seed(1033)
 
 def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
     # Loop through each time step.
-    n_steps = 200
+    n_steps = 1000 # number of unit time
     throughput = np.zeros(n_steps)
-
+    loss= 0.0
     prd_cycle_time = prod_normal_time
+    cumulative_throuput = []
+    total_prod_time = 0
 
     for i in range(1, n_steps):
-
-        loss = random.randint(0,num_cross) * 1 ### every crossing induces a single unit time loss
+        ###Every cycle time induce a random crossing congestion
+        if (i % prd_cycle_time == 0):
+            loss = random.randint(0,num_cross) * 1 ### every crossing induces a single unit time loss
+            prd_cycle_time = prod_normal_time + loss
 
         if i >= 1 and i <= prod_1_time:
             throughput[i] = 1 / (prod_1_time + loss)
+            cumulative_throuput.append(throughput[i])
         else:
-            throughput[i] = 1 / (prd_cycle_time + loss)
+            throughput[i] = 1 / prd_cycle_time
+            cumulative_throuput.append(throughput[i])
+
+        if sum(cumulative_throuput) >= qty and sum(cumulative_throuput) <= qty + 0.5:
+            total_prod_time = i
+
 
     steps = np.arange(0, n_steps, 1)
     font = {'family': 'serif',
@@ -39,13 +49,13 @@ def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
             }
     # Plot it!
     plt.plot(steps, throughput)
-    plt.title(f'Product variant {num+1} throughput ')
+    plt.title(f'Product variant {num+1} throughput with {num_cross} crossings dnd total time {total_prod_time}')
     plt.pause(0.05)
     plt.xlabel('unit time', fontdict=font)
     plt.ylabel('Throughput', fontdict=font)
 
     plt.clf()
-    return None
+    return total_prod_time
 
 
 def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
@@ -95,13 +105,11 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
         dist_lastedge = euclidean_dist(pos[seq[-2]][0], pos[seq[-2]][1], pos[seq[-1]][0], pos[seq[-1]][1])
         ct_1st_ptime = (num_workstations * process_time) + (
                     gLen / vel_transport)  ## first product doesnot experience congestion
-        ct_normal_time = process_time ## + (dist_lastedge / vel_transport)
-        congestion_loss = (random.randint(0,cross) * 1) ## one congestion amounts to single unit time loss
-        plot_throughput(i,ct_1st_ptime, ct_normal_time, qty,cross)
-        PI_cycle_time = ct_normal_time + congestion_loss
-        random_loss = cross * (random.randint(0, qty) * ct_normal_time)
+        ct_normal_time = process_time ## (dist_lastedge / vel_transport)
+        PI_prod_time = plot_throughput(i,ct_1st_ptime, ct_normal_time, qty,cross)
+        #random_loss = cross * (random.randint(0, qty) * ct_normal_time)
         #print(random_loss)
-        PI_prod_time = ct_1st_ptime + ((qty - 1) * ct_normal_time) + random_loss
+        ###PI_prod_time = ct_1st_ptime + ((qty - 1) * ct_normal_time) + random_loss - old measurement of stocashtic loss
         PI_arr_pt.append(PI_prod_time)
     Batch_prod_time = sum(PI_arr_pt)
 
