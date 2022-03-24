@@ -89,7 +89,7 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     for multi_strng in multi_strng_list:
         c = 0
         for line1, line2 in combinations([line for line in multi_strng], 2):
-            if line1.intersects(line2):
+            if line1.crosses(line2):
                 # print(line1.intersection(line2))
                 c += 1
                 d = 0
