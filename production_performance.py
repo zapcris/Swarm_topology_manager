@@ -15,6 +15,38 @@ def euclidean_dist(x1, y1, x2, y2):
 
 random.seed(1033)
 
+def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
+    # Loop through each time step.
+    n_steps = 200
+    throughput = np.zeros(n_steps)
+
+    prd_cycle_time = prod_normal_time
+
+    for i in range(1, n_steps):
+
+        loss = random.randint(0,num_cross) * 1 ### every crossing induces a single unit time loss
+
+        if i >= 1 and i <= prod_1_time:
+            throughput[i] = 1 / (prod_1_time + loss)
+        else:
+            throughput[i] = 1 / (prd_cycle_time + loss)
+
+    steps = np.arange(0, n_steps, 1)
+    font = {'family': 'serif',
+            'color': 'darkred',
+            'weight': 'normal',
+            'size': 16,
+            }
+    # Plot it!
+    plt.plot(steps, throughput)
+    plt.title(f'Product variant {num+1} throughput ')
+    plt.pause(0.05)
+    plt.xlabel('unit time', fontdict=font)
+    plt.ylabel('Throughput', fontdict=font)
+
+    plt.clf()
+    return None
+
 
 def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     # print(Batch_sequence)
@@ -51,76 +83,59 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
                 # print(line1.intersection(line2))
                 c += 1
                 d = 0
-        num_crossings.append(d)
+        num_crossings.append(c)
     print("no of crossings", num_crossings)
     vel_transport = 2  # speed of the transport robot
     process_time = 5  ## uniform process time required by workstations
 
     PI_arr_pt = []
     throughput = []
-    for seq, gLen, qty, cross in zip(Batch_sequence, len_graph, Qty, num_crossings):
+    for i, (seq, gLen, qty, cross) in enumerate(zip(Batch_sequence, len_graph, Qty, num_crossings)):
         num_workstations = len(seq)
         dist_lastedge = euclidean_dist(pos[seq[-2]][0], pos[seq[-2]][1], pos[seq[-1]][0], pos[seq[-1]][1])
-        ct_1st_prod = (num_workstations * process_time) + (
+        ct_1st_ptime = (num_workstations * process_time) + (
                     gLen / vel_transport)  ## first product doesnot experience congestion
-        ct_normal_product = process_time ## + (dist_lastedge / vel_transport)
-        random_loss = cross * (random.randint(0, qty) * ct_normal_product)
-        # print(random_loss)
-        PI_prod_time = ct_1st_prod + ((qty - 1) * ct_normal_product) + random_loss
+        ct_normal_time = process_time ## + (dist_lastedge / vel_transport)
+        congestion_loss = (random.randint(0,cross) * 1) ## one congestion amounts to single unit time loss
+        plot_throughput(i,ct_1st_ptime, ct_normal_time, qty,cross)
+        PI_cycle_time = ct_normal_time + congestion_loss
+        random_loss = cross * (random.randint(0, qty) * ct_normal_time)
+        #print(random_loss)
+        PI_prod_time = ct_1st_ptime + ((qty - 1) * ct_normal_time) + random_loss
         PI_arr_pt.append(PI_prod_time)
     Batch_prod_time = sum(PI_arr_pt)
 
-    n_steps = 100
-    prd_cycle_time = PI_arr_pt[0] / Qty[0]
-    throughput = np.zeros(n_steps)
-
-    # Loop through each time step.
-    flip = []
-    for i in range(8):
-    #     # Flip a coin.
-        f= np.random.rand()
-        flip.append(f)
-    print(sum(flip))
-
-
-    font = {'family': 'serif',
-            'color': 'darkred',
-            'weight': 'normal',
-            'size': 16,
-            }
-    for i in range(1, n_steps):
-        if i >=1 and i <= 35:
-            throughput[i] = 1 / 35
-        else:
-            throughput[i] = 1 / prd_cycle_time
-    steps = np.arange(0, n_steps, 1)
-    # Plot it!
-    plt.plot(steps, throughput)
-    plt.title('product instance 1 throughput')
-    plt.xlabel('unit time', fontdict=font)
-    plt.ylabel('Throughput', fontdict=font)
-
-    plt.show()
-
+    # n_steps = 100
+    # prd_cycle_time = PI_arr_pt[0] / Qty[0]
+    # throughput = np.zeros(n_steps)
+    #
+    # # Loop through each time step.
+    # flip = []
+    # for i in range(8):
+    # #     # Flip a coin.
+    #     f= np.random.rand()
+    #     flip.append(f)
+    # print(sum(flip))
+    #
+    #
     # font = {'family': 'serif',
     #         'color': 'darkred',
     #         'weight': 'normal',
     #         'size': 16,
     #         }
+    # for i in range(1, n_steps):
+    #     if i >=1 and i <= 35:
+    #         throughput[i] = 1 / 35
+    #     else:
+    #         throughput[i] = 1 / prd_cycle_time
+    # steps = np.arange(0, n_steps, 1)
+    # # Plot it!
+    # plt.plot(steps, throughput)
+    # plt.title('product instance 1 throughput')
+    # plt.xlabel('unit time', fontdict=font)
+    # plt.ylabel('Throughput', fontdict=font)
     #
-    # x = np.linspace(0.0, 5.0, 100)
-    # y = np.cos(2 * np.pi * x) * np.exp(-x)
-    #
-    # plt.plot(x, y, 'k')
-    # plt.title('Damped exponential decay', fontdict=font)
-    # plt.text(2, 0.65, r'$\cos(2 \pi t) \exp(-t)$', fontdict=font)
-    # plt.xlabel('time (s)', fontdict=font)
-    # plt.ylabel('voltage (mV)', fontdict=font)
-    #
-    # # Tweak spacing to prevent clipping of ylabel
-    # plt.subplots_adjust(left=0.15)
     # plt.show()
-
 
     return Batch_prod_time, PI_arr_pt
 
