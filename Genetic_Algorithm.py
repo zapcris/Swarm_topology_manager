@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import networkx as nx
-import matplotlib.pyplot as plt2
+import matplotlib.pyplot as plt
 import random
 
 from sklearn import preprocessing
@@ -271,12 +271,14 @@ def run_GA():
         print("The topology of the fittest value:", topology_htable[final_fitness])
 
         nx.draw(OptmialGraph, topology_htable[final_fitness][0], with_labels=True)
-        plt2.savefig('optimal topology found from GA recursion')
+        plt.savefig('optimal topology found from GA recursion')
+        plt.clf()
 
     elif min(offspring_fitness) <= 500:
         print("Fitness value found below 500:", min(offspring_fitness))
         nx.draw(OptmialGraph, topology_htable[min(offspring_fitness)][0], with_labels=True)
-        plt2.show('optimal topology found without GA recursion')
+        plt.show('optimal topology found without GA recursion')
+        plt.clf()
 
     width_dict = Counter(OptmialGraph.edges())
     edge_width = [[u, v, {'frequency': value}]
