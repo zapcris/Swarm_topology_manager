@@ -16,10 +16,12 @@ def euclidean_dist(x1, y1, x2, y2):
 
 random.seed(1033)
 
+
 def get_cmap(n, name='hsv'):
     '''Returns a function that maps each index in 0, 1, ..., n-1 to a distinct
     RGB color; the keyword argument name must be a standard mpl colormap name.'''
     return plt.cm.get_cmap(name, n)
+
 
 def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
     # Loop through each time step.
@@ -27,25 +29,37 @@ def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
     throughput = np.zeros(n_steps)
     loss = 0.0
     prd_cycle_time = prod_normal_time
+    ideal_cycle_time = prod_normal_time
     cumulative_throuput = []
+    cumulative_ideal_throughput = []
+    ideal_throughput = np.zeros(n_steps)
     total_prod_time = 0
+    ideal_prod_time = 0
 
     for i in range(1, n_steps):
         ###Every cycle time induce a random crossing congestion
         if i % prd_cycle_time == 0:
             loss = random.randint(0, num_cross) * 1  ### every crossing induces a single unit time loss
             prd_cycle_time = prod_normal_time + loss
+            ideal_cycle_time = prod_normal_time + 0
 
-        if 1 <= i <= prod_1_time:
+        if 1 <= i <= prod_1_time:  ### Calculating throughput for the 1st production time.
             total_1st_time = prod_1_time + loss
             throughput[i] = 1 / total_1st_time
+            ideal_throughput[i] = 1 / prod_1_time
             cumulative_throuput.append(throughput[i])
-        else:
+            cumulative_ideal_throughput.append(ideal_throughput[i])
+        else:  ### calculating throughput for the normal prod time
             throughput[i] = 1 / prd_cycle_time
+            ideal_throughput[i] = 1 / ideal_cycle_time
             cumulative_throuput.append(throughput[i])
+            cumulative_ideal_throughput.append(ideal_throughput[i])
 
         if qty <= sum(cumulative_throuput) <= qty + 0.5:
             total_prod_time = i
+
+        if qty <= sum(cumulative_ideal_throughput) <= qty + 0.5:
+            ideal_prod_time = i
 
     snapped_throughput = throughput[:total_prod_time]
 
@@ -63,7 +77,7 @@ def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
     plt.savefig(f'charts/throughput/perf_product variant {num + 1}')
     plt.pause(0.05)
     plt.clf()
-    return total_prod_time, snapped_throughput, round(total_1st_time)
+    return total_prod_time, snapped_throughput, round(total_1st_time), ideal_prod_time
 
 
 def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
@@ -109,6 +123,7 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     PI_arr_pt = []
     PI_arr_thr = []
     PI_arr_1sTime = []
+    PI_arr_idealT = []
     throughput = []
     for i, (seq, gLen, qty, cross) in enumerate(zip(Batch_sequence, len_graph, Qty, num_crossings)):
         num_workstations = len(seq)
@@ -123,40 +138,44 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
         PI_arr_pt.append(PI_prod_time[0])
         PI_arr_thr.append(PI_prod_time[1])
         PI_arr_1sTime.append(PI_prod_time[2])
+        PI_arr_idealT.append(PI_prod_time[3])
 
     Batch_prod_time = sum(PI_arr_pt)
     print("production time required array", PI_arr_pt)
     print("production throughput array", len(PI_arr_thr[1]))
     print("production 1st prod time required array", PI_arr_1sTime)
-
+    print("production ideal time array", PI_arr_idealT)
 
     ### Plot the cumulative graph with coinciding the
     prod_span = 1600
-
 
     # for i in range(len(cumulative_throughput)):
     #     cumulative_throughput[i] = random.randint(1,35)
 
     prod_steps = np.arange(0, prod_span, 1)
     plt.figure()
-    #cmap = get_cmap(len(data))
+    # cmap = get_cmap(len(data))
     colors = pl.cm.jet(np.linspace(0, 1, len(Batch_sequence)))
     # Plotting both the curves simultaneously
     offset = 1
     for i in range(len(Batch_sequence)):
         cumulative_throughput = np.zeros(prod_span)
+
         if i == 0:
             offset += 0
         else:
-            offset += Qty[i-1] * 5
-            #print(f"Start time of previous product was {PI_arr_pt[i-1]} product and time to produce 1st sample of current product {PI_arr_1sTime[i]}")
-        print("product with start and stop index",i+1, offset, PI_arr_pt[i]+offset)
 
-        cumulative_throughput[offset:PI_arr_pt[i]+offset] = PI_arr_thr[i]#[1:PI_arr_pt[i]]
-        plt.plot(prod_steps, cumulative_throughput,color=colors[i], label=f'Product {i+1}')
-        #plt.pause(0.05)
+            coeff_pTime = PI_arr_idealT[i - 1] / process_time
+            #print("the calculated coeff prodcut", i+1, coeff_pTime)
+            actual_processtime = float(PI_arr_pt[i - 1]) / coeff_pTime
+            print(f"the actual process time of product {i+1} is {coeff_pTime}")
+            offset += round(Qty[i - 1] * actual_processtime)
+            # print(f"Start time of previous product was {PI_arr_pt[i-1]} product and time to produce 1st sample of current product {PI_arr_1sTime[i]}")
+        print("product with start and stop index", i + 1, offset, PI_arr_pt[i] + offset)
 
-
+        cumulative_throughput[offset:PI_arr_pt[i] + offset] = PI_arr_thr[i]  # [1:PI_arr_pt[i]]
+        plt.plot(prod_steps, cumulative_throughput, color=colors[i], label=f'Product {i + 1}')
+        # plt.pause(0.05)
 
     # Naming the x-axis, y-axis and the whole graph
     plt.xlabel("Unit Time")
@@ -168,8 +187,6 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
 
     # To load the display window
     plt.savefig(f'charts/throughput/Cumulative production')
-
-
 
     return Batch_prod_time, PI_arr_pt
 
@@ -252,36 +269,35 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
 # print(count)
 
 
-
 ## graph plot
 # n_steps = 100
-    # prd_cycle_time = PI_arr_pt[0] / Qty[0]
-    # throughput = np.zeros(n_steps)
-    #
-    # # Loop through each time step.
-    # flip = []
-    # for i in range(8):
-    # #     # Flip a coin.
-    #     f= np.random.rand()
-    #     flip.append(f)
-    # print(sum(flip))
-    #
-    #
-    # font = {'family': 'serif',
-    #         'color': 'darkred',
-    #         'weight': 'normal',
-    #         'size': 16,
-    #         }
-    # for i in range(1, n_steps):
-    #     if i >=1 and i <= 35:
-    #         throughput[i] = 1 / 35
-    #     else:
-    #         throughput[i] = 1 / prd_cycle_time
-    # steps = np.arange(0, n_steps, 1)
-    # # Plot it!
-    # plt.plot(steps, throughput)
-    # plt.title('product instance 1 throughput')
-    # plt.xlabel('unit time', fontdict=font)
-    # plt.ylabel('Throughput', fontdict=font)
-    #
-    # plt.show()
+# prd_cycle_time = PI_arr_pt[0] / Qty[0]
+# throughput = np.zeros(n_steps)
+#
+# # Loop through each time step.
+# flip = []
+# for i in range(8):
+# #     # Flip a coin.
+#     f= np.random.rand()
+#     flip.append(f)
+# print(sum(flip))
+#
+#
+# font = {'family': 'serif',
+#         'color': 'darkred',
+#         'weight': 'normal',
+#         'size': 16,
+#         }
+# for i in range(1, n_steps):
+#     if i >=1 and i <= 35:
+#         throughput[i] = 1 / 35
+#     else:
+#         throughput[i] = 1 / prd_cycle_time
+# steps = np.arange(0, n_steps, 1)
+# # Plot it!
+# plt.plot(steps, throughput)
+# plt.title('product instance 1 throughput')
+# plt.xlabel('unit time', fontdict=font)
+# plt.ylabel('Throughput', fontdict=font)
+#
+# plt.show()
