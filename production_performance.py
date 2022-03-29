@@ -175,7 +175,7 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
         print(f"product {i+1} with start {offset} and stop {PI_arr_pt[i] + offset} index")
 
         cumulative_throughput[offset:PI_arr_pt[i] + offset] = PI_arr_thr[i]  # [1:PI_arr_pt[i]]
-        plt.plot(prod_steps, cumulative_throughput, color=colors[i], label=f'P {i + 1} qty {Qty[i]} cy_Time {process_time[i]}')
+        plt.plot(prod_steps, cumulative_throughput, color=colors[i], label=f'P{i + 1} for qty-{Qty[i]} CT-{process_time[i]} time')
         # plt.pause(0.05)
 
     # Naming the x-axis, y-axis and the whole graph
