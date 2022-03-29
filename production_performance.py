@@ -25,6 +25,7 @@ def get_cmap(n, name='hsv'):
 
 def plot_throughput(num, prod_1_time, prod_normal_time, qty, num_cross):
     # Loop through each time step.
+    # It is important to simulate each variant before scheduling a total batch
     n_steps = 1000  # number of unit time
     throughput = np.zeros(n_steps)
     loss = 0.0
@@ -168,12 +169,15 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
             coeff_pTime = PI_arr_idealT[i - 1] / process_time[i-1]
             #print("the calculated coeff prodcut", i+1, coeff_pTime)
             actual_processtime = float(PI_arr_pt[i - 1]) / coeff_pTime
+            #print("debug here", float(PI_arr_pt[i - 1]), coeff_pTime)
             #print(f'previous process time is {process_time[i-1]}')
             print(f"the actual process time of product {i+1} is {coeff_pTime}")
             offset += round(Qty[i - 1] * actual_processtime)
             # print(f"Start time of previous product was {PI_arr_pt[i-1]} product and time to produce 1st sample of current product {PI_arr_1sTime[i]}")
-        print(f"product {i+1} with start {offset} and stop {PI_arr_pt[i] + offset} index")
 
+        if i == len(Batch_sequence)-1:
+            finish_time = PI_arr_pt[i] + offset
+        print(f"product {i + 1} with start {offset} and stop {PI_arr_pt[i] + offset} index")
         cumulative_throughput[offset:PI_arr_pt[i] + offset] = PI_arr_thr[i]  # [1:PI_arr_pt[i]]
         plt.plot(prod_steps, cumulative_throughput, color=colors[i], label=f'P{i + 1} for qty-{Qty[i]} CT-{process_time[i]} time')
         # plt.pause(0.05)
@@ -181,7 +185,7 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
     # Naming the x-axis, y-axis and the whole graph
     plt.xlabel("Unit Time")
     plt.ylabel("Throughput")
-    plt.title("Cumulative Production Stat")
+    plt.title(f"Batch Production finished in {finish_time} time")
 
     # Adding legend, which helps us recognize the curve according to it's color
     plt.legend()

@@ -287,4 +287,6 @@ def run_GA():
 
     "Production performance of the fittest solution"
     Qty_order = [10, 30, 50, 20, 60, 20, 40]
+    #Qty_order = [100,100,100,100,100,100,100]
+    #Qty_order = [1, 1, 1, 1, 1, 1, 1]
     print(prod_efficiency(batch_seq, topology_htable[final_fitness][0], Qty_order, topology_htable[final_fitness][1]))
