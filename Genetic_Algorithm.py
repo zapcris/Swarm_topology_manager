@@ -110,7 +110,7 @@ def run_GA():
         btop = create_batch_topology(init_population[i].sequence, i + 1, init_population[i].k_val,
                                      init_population[i].iter_nr)
         fitness_list.append(btop[0])
-        topology_htable.update({btop[0]: (btop[1], btop[2])})
+        topology_htable.update({btop[0]: (btop[1], btop[2],init_population[i].k_val,init_population[i].iter_nr)})
         # print(btop)
 
     print("Fitness list:", fitness_list)
@@ -147,7 +147,7 @@ def run_GA():
         off_top = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
                                         off_population[i].iter_nr)
         offspring_fitness.append(off_top[0])
-        topology_htable.update({off_top[0]: (off_top[1],off_top[2])})
+        topology_htable.update({off_top[0]: (off_top[1],off_top[2],off_population[i].k_val,off_population[i].iter_nr)})
         # print("OFF spring topologies:", i + 1, off_top)
 
     print(min(offspring_fitness))
@@ -185,7 +185,7 @@ def run_GA():
             top = create_batch_topology(new_population[i].sequence, i + 1, new_population[i].k_val,
                                         new_population[i].iter_nr)
             fit_list.append(top[0])
-            topology_htable.update({top[0]: (top[1], top[2])})
+            topology_htable.update({top[0]: (top[1], top[2],new_population[i].k_val,new_population[i].iter_nr)})
 
         print("The current population fitness list:", fit_list)
 
@@ -212,7 +212,7 @@ def run_GA():
             otop = create_batch_topology(off_population[i].sequence, i + 1, off_population[i].k_val,
                                          off_population[i].iter_nr)
             offspr_fitness.append(otop[0])
-            topology_htable.update({otop[0]: (otop[1], otop[2])})
+            topology_htable.update({otop[0]: (otop[1], otop[2],off_population[i].k_val,off_population[i].iter_nr)})
             # print("OFF spring topologies:", i + 1, otop)
 
         print("fitness list of offspring in this iteration:", offspr_fitness)
