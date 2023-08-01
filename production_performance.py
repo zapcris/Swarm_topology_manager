@@ -103,7 +103,7 @@ def prod_efficiency(Batch_sequence, pos, Qty, len_graph):
 
     for pos_seq in edge_pos_list:
         e = MultiLineString(pos_seq)
-        multi_strng_list.append(e)
+        multi_strng_list.append(e.geoms)
 
     # for i in multi_strng_list:
     #     print(i)
