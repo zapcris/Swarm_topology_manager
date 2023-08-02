@@ -7,6 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import random
 
+import pymongo
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 # from .utils import Get_Distance_Or_Flow
@@ -43,6 +44,9 @@ class chromosome:
     iter_nr: int
     sequence: list
 
+
+def max_value(input_list):
+    return max([sublist[-1] for sublist in input_list])
 
 def run_GA():
     global open_filename
@@ -290,3 +294,38 @@ def run_GA():
     #Qty_order = [100,100,100,100,100,100,100]
     #Qty_order = [1, 1, 1, 1, 1, 1, 1]
     print(prod_efficiency(batch_seq, topology_htable[final_fitness][0], Qty_order, topology_htable[final_fitness][1]))
+
+    top_keys = []
+    for fit in topology_htable:
+        k = fit
+        top_keys.append(k)
+
+    topologies = []
+    print("New code")
+
+    # print(topology_htable[final_fitness][0])
+    # print(top_keys)
+
+    for fit_val in top_keys:
+        # topologies.append(topology_htable[fit_val][1])
+        top_dict = topology_htable[fit_val][0]
+        top = [None] * max_value(batch_seq)
+        for key, value in top_dict.items():
+            top[key - 1] = value
+        topologies.append(top)
+
+    optimized_top = [None] * max_value(batch_seq)
+    for key, value in topology_htable[final_fitness][0].items():
+        optimized_top[key-1] = value
+    #print(topologies)
+
+    "Connect to MongoDB"
+    client = pymongo.MongoClient("mongodb://localhost:27017")
+    db = client["Topology_Manager"]
+    collection = db["Spring_Topologies"]
+
+    coll_dict = {"Batch_Sequence": batch_seq, "Production_order": Qty_order, "Statistical_Fitness": top_keys,
+                 "Topologies": topologies, "Optimized_Topology": optimized_top}
+    # coll_dict = {"Topologies": topologies}
+
+    x = collection.insert_one(coll_dict)

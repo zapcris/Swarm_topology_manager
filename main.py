@@ -91,6 +91,10 @@ print("The Batch Sequence from the sheet")
 
 print(dframe)
 
+
+
+
+
 root.mainloop()
 
 ####### OLD RUNNING IMPLEMENTATION########################
