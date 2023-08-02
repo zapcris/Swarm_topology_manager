@@ -325,7 +325,7 @@ def run_GA():
     collection = db["Spring_Topologies"]
 
     coll_dict = {"Batch_Sequence": batch_seq, "Production_order": Qty_order, "Statistical_Fitness": top_keys,
-                 "Topologies": topologies, "Optimized_Topology": optimized_top}
+                 "Estimated_Topologies": topologies, "Optimized_Topology": optimized_top}
     # coll_dict = {"Topologies": topologies}
 
     x = collection.insert_one(coll_dict)
